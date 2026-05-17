@@ -1,4 +1,0 @@
-date,nom,email,pwd,adresse,achat,etat
-2026-05-13,Rakoto,rakoto@yopmail.com,123456,Antananarivo,"(""T_01"";1;""Noir"")",dans le panier
-2026-05-13,Rakoto,rakoto@yopmail.com,123456,Antananarivo,"(""C_01"";2;""Unique"")",paiement effectue
-2026-05-13,Rakoto,rakoto@yopmail.com,123456,Antananarivo,"(""T_01"";1;""Blanc"")",annule
