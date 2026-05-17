@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
+  <product>
+    <active>1</active>
+    <price>19.99</price>
+    <id_tax_rules_group>0</id_tax_rules_group>
+
+    <name>
+      <language id="1">Produit NewApp</language>
+    </name>
+
+    <link_rewrite>
+      <language id="1">produit-newapp</language>
+    </link_rewrite>
+
+    <id_category_default>2</id_category_default>
+    <associations>
+      <categories>
+        <category><id>2</id></category>
+      </categories>
+    </associations>
+  </product>
+</prestashop>

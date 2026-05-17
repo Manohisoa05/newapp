@@ -1,0 +1,7 @@
+export { default as CartPage } from './CartPage'
+export { default as CheckoutPage } from './CheckoutPage'
+export { default as FrontLoginPage } from './FrontLoginPage'
+export { default as HomePage } from './HomePage'
+export { default as MyOrdersPage } from './MyOrdersPage'
+export { default as ProductPage } from './ProductPage'
+export { default as UserSelectorPage } from './UserSelectorPage'

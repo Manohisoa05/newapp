@@ -1,0 +1,7 @@
+export { default as BackofficePage } from './BackofficePage'
+export { default as ImportDataPage } from './ImportDataPage'
+export { default as LoginPage } from './LoginPage'
+export { default as OrdersPage } from './OrdersPage'
+export { default as ResetDataPage } from './ResetDataPage'
+export { default as StockPage } from './StockPage'
+export { default as StockHistoryPage } from './StockHistoryPage'

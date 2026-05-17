@@ -1,0 +1,5 @@
+date_availability_produit,nom,reference,prix_ttc,Taxe,categorie,prix_achat
+01/12/2025,Tshirt,T_01,"12,5","11,65%",Akanjo,"8,5"
+02/05/2026,Pantalon,P_01,"18,99","11,65%",Akanjo,"14,33"
+08/05/2026,Casquette,C_03,5,"5,60%",Accessoire,2
+08/05/2026,Montre,M_02,56,"5,60%",Accessoire,40

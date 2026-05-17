@@ -1,0 +1,21 @@
+date_availability_produit,nom,reference,prix_ttc,Taxe,categorie,prix_achat
+01/01/2026,Tshirt,T_01,"12,5","11,65%",Akanjo,"8,5"
+02/01/2026,Pantalon,P_01,"18,99","11,65%",Akanjo,"14,33"
+03/01/2026,Casquette,C_03,5,"5,60%",Accessoire,2
+04/01/2026,Montre,M_02,56,"5,60%",Accessoire,40
+05/01/2026,Sac à dos,S_01,"45,99","11,65%",Accessoire,"30,5"
+06/01/2026,Chaussures de sport,CH_01,"79,99","11,65%",Akanjo,"55,2"
+07/01/2026,Pull,P_02,"35,5","11,65%",Akanjo,"22,8"
+08/01/2026,Ceinture,C_04,"19,99","5,60%",Accessoire,"12,5"
+09/01/2026,Lunettes de soleil,L_01,"89,99","5,60%",Accessoire,"55,0"
+10/01/2026,Portefeuille,PO_01,"49,99","5,60%",Accessoire,"30,0"
+11/01/2026,Chemise,CH_02,"49,99","11,65%",Akanjo,"32,5"
+12/01/2026,Short,S_02,"24,99","11,65%",Akanjo,"15,2"
+13/01/2026,Veste,V_01,"99,99","11,65%",Akanjo,"65,0"
+14/01/2026,Gants,G_01,"14,99","5,60%",Accessoire,"8,5"
+15/01/2026,Écharpe,E_01,"29,99","5,60%",Accessoire,"18,5"
+16/01/2026,Chapeau,CH_03,"19,99","5,60%",Accessoire,"12,0"
+17/01/2026,Bottes,B_01,"129,99","11,65%",Akanjo,"85,0"
+18/01/2026,Sandales,SA_01,"39,99","11,65%",Akanjo,"25,5"
+19/01/2026,Robe,R_01,"69,99","11,65%",Akanjo,"45,0"
+20/01/2026,Jupe,J_01,"44,99","11,65%",Akanjo,"29,5"

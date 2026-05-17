@@ -1,0 +1,121 @@
+date,nom,email,pwd,adresse,achat,etat
+01/02/2026,Rakoto,rakoto1@yopmail.com,Pass123!,Analakely,"[(""T_01"";2;""M"")]",paiement accepté
+02/02/2026,Rabe,rakoto2@yopmail.com,Pass123!,Ivato,"[(""P_01"";1;""40"")]",dans le panier
+03/02/2026,Rasoa,rakoto3@yopmail.com,Pass123!,Anosy,"[(""C_03"";3;""noir"")]",paiement accepté
+04/02/2026,Rakotomalala,rakoto4@yopmail.com,Pass123!,Mahamasina,"[(""S_01"";1;""bleu"")]",dans le panier
+05/02/2026,Randria,rakoto5@yopmail.com,Pass123!,Ambohipo,"[(""CH_01"";1;""42"")]",paiement accepté
+06/02/2026,Razanadrakoto,rakoto6@yopmail.com,Pass123!,Isotry,"[(""P_02"";2;""M"")]",dans le panier
+07/02/2026,Ravelona,rakoto7@yopmail.com,Pass123!,Antanimena,"[(""C_04"";1;""marron"")]",paiement accepté
+08/02/2026,Rajaonarison,rakoto8@yopmail.com,Pass123!,Andoharanofotsy,"[(""L_01"";1;""bleu"")]",dans le panier
+09/02/2026,Rakotondrabe,rakoto9@yopmail.com,Pass123!,Ankadifotsy,"[(""PO_01"";2;""noir"")]",paiement accepté
+10/02/2026,Rasoazanany,rakoto10@yopmail.com,Pass123!,67ha,"[(""CH_02"";1;""L"")]",dans le panier
+11/02/2026,Randriamanana,rakoto11@yopmail.com,Pass123!,Ivandry,"[(""S_02"";2;""M"")]",paiement accepté
+12/02/2026,Rakotobe,rakoto12@yopmail.com,Pass123!,Talatamaty,"[(""V_01"";1;""XL"")]",dans le panier
+13/02/2026,Ratsimbazafy,rakoto13@yopmail.com,Pass123!,Ankorondrano,"[(""G_01"";2;""unique"")]",paiement accepté
+14/02/2026,Raharimalala,rakoto14@yopmail.com,Pass123!,Anosy,"[(""E_01"";1;""rouge"")]",dans le panier
+15/02/2026,Razafindrabe,rakoto15@yopmail.com,Pass123!,Ampefiloha,"[(""CH_03"";1;""unique"")]",paiement accepté
+16/02/2026,Rabemananjara,rakoto16@yopmail.com,Pass123!,Tanjombato,"[(""B_01"";1;""41"")]",dans le panier
+17/02/2026,Randrianarisoa,rakoto17@yopmail.com,Pass123!,Alarobia,"[(""SA_01"";2;""39"")]",paiement accepté
+18/02/2026,Rakotovao,rakoto18@yopmail.com,Pass123!,Itaosy,"[(""R_01"";1;""M"")]",dans le panier
+19/02/2026,Rasoanirina,rakoto19@yopmail.com,Pass123!,Fianarantsoa,"[(""J_01"";2;""40"")]",paiement accepté
+20/02/2026,Raveloson,rakoto20@yopmail.com,Pass123!,Toamasina,"[(""T_01"";1;""S"")]",dans le panier
+21/02/2026,Rakotonirina,rakoto21@yopmail.com,Pass123!,Analamahitsy,"[(""P_01"";2;""42"")]",paiement accepté
+22/02/2026,Randriamihaja,rakoto22@yopmail.com,Pass123!,Antsirabe,"[(""C_03"";1;""rouge"")]",dans le panier
+23/02/2026,Rafanomezantsoa,rakoto23@yopmail.com,Pass123!,Majunga,"[(""S_01"";1;""gris"")]",paiement accepté
+24/02/2026,Rakotondrafara,rakoto24@yopmail.com,Pass123!,Morondava,"[(""CH_01"";1;""40"")]",dans le panier
+25/02/2026,Razafintsalama,rakoto25@yopmail.com,Pass123!,Diego,"[(""P_02"";3;""L"")]",paiement accepté
+26/02/2026,Ravelomanantsoa,rakoto26@yopmail.com,Pass123!,Nosy Be,"[(""C_04"";2;""noir"")]",dans le panier
+27/02/2026,Rabekoto,rakoto27@yopmail.com,Pass123!,Sambava,"[(""L_01"";1;""noir"")]",paiement accepté
+28/02/2026,Rakotoniaina,rakoto28@yopmail.com,Pass123!,Vakinankaratra,"[(""PO_01"";1;""marron"")]",dans le panier
+01/03/2026,Ratsiraka,rakoto29@yopmail.com,Pass123!,Antalaha,"[(""CH_02"";2;""S"")]",paiement accepté
+02/03/2026,Rabenoro,rakoto30@yopmail.com,Pass123!,Farafangana,"[(""S_02"";1;""L"")]",dans le panier
+03/03/2026,Ramandimbisoa,rakoto31@yopmail.com,Pass123!,Brickaville,"[(""V_01"";1;""M"")]",paiement accepté
+04/03/2026,Rakotomanga,rakoto32@yopmail.com,Pass123!,Tuléar,"[(""G_01"";1;""unique"")]",dans le panier
+05/03/2026,Raveloharison,rakoto33@yopmail.com,Pass123!,Manakara,"[(""E_01"";2;""bleu"")]",paiement accepté
+06/03/2026,Rahajamanana,rakoto34@yopmail.com,Pass123!,Befelatanana,"[(""CH_03"";1;""unique"")]",dans le panier
+07/03/2026,Rakotomalasoa,rakoto35@yopmail.com,Pass123!,Ampitatafika,"[(""B_01"";2;""40"")]",paiement accepté
+08/03/2026,Rakotohery,rakoto36@yopmail.com,Pass123!,Ankazomanga,"[(""SA_01"";1;""38"")]",dans le panier
+09/03/2026,Rasoavololona,rakoto37@yopmail.com,Pass123!,Tsimbazaza,"[(""R_01"";1;""S"")]",paiement accepté
+10/03/2026,Randrianantenaina,rakoto38@yopmail.com,Pass123!,Antohomadinika,"[(""J_01"";1;""38"")]",dans le panier
+11/03/2026,Rakotoarisoa,rakoto39@yopmail.com,Pass123!,Ankadimbahoaka,"[(""T_01"";2;""XL"")]",paiement accepté
+12/03/2026,Ramamonjisoa,rakoto40@yopmail.com,Pass123!,Ankadivato,"[(""P_01"";1;""44"")]",dans le panier
+12/04/2026,Rabemananjara,rabemananjara@yopmail.com,Pass123!,Antalaha,"[(""V_01"";1;""XL"")]",paiement accepté
+13/04/2026,Rakotondrabe,rakotondrabe@yopmail.com,Pass123!,Betioky,"[(""G_01"";1;""unique"")]",dans le panier
+14/04/2026,Razanakolona,razanakolona@yopmail.com,Pass123!,Ambohidratrimo,"[(""E_01"";2;""bleu"")]",
+15/04/2026,Rafanomezantsoa,rafanomezantsoa@yopmail.com,Pass123!,Ankazobe,"[(""CH_03"";1;""unique"")]",paiement accepté
+16/04/2026,Randriatsiferana,randriatsiferana@yopmail.com,Pass123!,Tsiroanomandidy,"[(""B_01"";2;""40"")]",dans le panier
+17/04/2026,Ravelomanantsoa,ravelomanantsoa@yopmail.com,Pass123!,Maevatanana,"[(""SA_01"";1;""39"")]",
+18/04/2026,Raharimanga,raharimanga@yopmail.com,Pass123!,Mahanoro,"[(""R_01"";1;""S"")]",paiement accepté
+19/04/2026,Rakotovao,rakotovao@yopmail.com,Pass123!,Soavinandriana,"[(""J_01"";2;""38"")]",dans le panier
+20/04/2026,Ramamonjisoa,ramamonjisoa@yopmail.com,Pass123!,Ampefy,"[(""T_01"";1;""M"")]",
+21/04/2026,Razanadrakoto,razanadrakoto@yopmail.com,Pass123!,Bekily,"[(""P_01"";1;""42"")]",paiement accepté
+22/04/2026,Ratsimbazafy,ratsimbazafy@yopmail.com,Pass123!,Beloha,"[(""C_03"";2;""noir"")]",dans le panier
+23/04/2026,Rafidimanana,rafidimanana@yopmail.com,Pass123!,Morombe,"[(""M_02"";1;""argent"")]",
+24/04/2026,Randrianjatovo,randrianjatovo@yopmail.com,Pass123!,Ifaty,"[(""S_01"";1;""bleu"")]",paiement accepté
+25/04/2026,Rakotonirainy,rakotonirainy@yopmail.com,Pass123!,Anakao,"[(""CH_01"";1;""40"")]",dans le panier
+26/04/2026,Rasolondraibe,rasolondraibe@yopmail.com,Pass123!,Antsohihy,"[(""P_02"";2;""L"")]",
+27/04/2026,Ramialison,ramialison@yopmail.com,Pass123!,Mampikony,"[(""C_04"";1;""marron"")]",paiement accepté
+28/04/2026,Rafaramalala,rafaramalala@yopmail.com,Pass123!,Port-Bergé,"[(""L_01"";1;""noir"")]",dans le panier
+29/04/2026,Rakotomalaza,rakotomalaza@yopmail.com,Pass123!,Mandritsara,"[(""PO_01"";1;""marron"")]",
+30/04/2026,Razanamparany,razanamparany@yopmail.com,Pass123!,Ambanja,"[(""CH_02"";1;""S"")]",paiement accepté
+01/05/2026,Raharison,raharison@yopmail.com,Pass123!,Ambilobe,"[(""S_02"";2;""L"")]",dans le panier
+02/05/2026,Ramandimbiarison,ramandimbiarison@yopmail.com,Pass123!,Vohemar,"[(""V_01"";1;""M"")]",
+03/05/2026,Rakotoniaina,rakotoniaina@yopmail.com,Pass123!,Maroantsetra,"[(""G_01"";2;""unique"")]",paiement accepté
+04/05/2026,Razanatsoa,razanatsoa@yopmail.com,Pass123!,Fenoarivo,"[(""E_01"";1;""rouge"")]",dans le panier
+05/05/2026,Ramorasata,ramorasata@yopmail.com,Pass123!,Sainte-Marie,"[(""CH_03"";1;""unique"")]",
+06/05/2026,Randrianarivelo,randrianarivelo@yopmail.com,Pass123!,Ambositra,"[(""B_01"";1;""41"")]",paiement accepté
+07/05/2026,Raveloson,raveloson@yopmail.com,Pass123!,Mananjary,"[(""SA_01"";2;""38"")]",dans le panier
+08/05/2026,Rafanomezana,rafanomezana@yopmail.com,Pass123!,Ikongo,"[(""R_01"";1;""M"")]",
+09/05/2026,Rabekoto,rabekoto@yopmail.com,Pass123!,Nosy Varika,"[(""J_01"";1;""40"")]",paiement accepté
+10/05/2026,Ratsiarovana,ratsiarovana@yopmail.com,Pass123!,Vangaindrano,"[(""T_01"";2;""XL"")]",dans le panier
+11/05/2026,Razafintsalama,razafintsalama@yopmail.com,Pass123!,Midongy,"[(""P_01"";1;""44"")]",
+12/05/2026,Rabemananjara,rabemananjara@yopmail.com,Pass123!,Antalaha,"[(""V_01"";1;""XL"")]",paiement accepté
+13/05/2026,Rakotondrabe,rakotondrabe@yopmail.com,Pass123!,Betioky,"[(""G_01"";1;""unique"")]",dans le panier
+14/05/2026,Razanakolona,razanakolona@yopmail.com,Pass123!,Ambohidratrimo,"[(""E_01"";2;""bleu"")]",
+15/05/2026,Rafanomezantsoa,rafanomezantsoa@yopmail.com,Pass123!,Ankazobe,"[(""CH_03"";1;""unique"")]",paiement accepté
+16/05/2026,Randriatsiferana,randriatsiferana@yopmail.com,Pass123!,Tsiroanomandidy,"[(""B_01"";2;""40"")]",dans le panier
+17/05/2026,Ravelomanantsoa,ravelomanantsoa@yopmail.com,Pass123!,Maevatanana,"[(""SA_01"";1;""39"")]",
+18/05/2026,Raharimanga,raharimanga@yopmail.com,Pass123!,Mahanoro,"[(""R_01"";1;""S"")]",paiement accepté
+19/05/2026,Rakotovao,rakotovao@yopmail.com,Pass123!,Soavinandriana,"[(""J_01"";2;""38"")]",dans le panier
+20/05/2026,Ramamonjisoa,ramamonjisoa@yopmail.com,Pass123!,Ampefy,"[(""T_01"";1;""M"")]",
+21/05/2026,Razanadrakoto,razanadrakoto@yopmail.com,Pass123!,Bekily,"[(""P_01"";1;""42"")]",paiement accepté
+22/05/2026,Ratsimbazafy,ratsimbazafy@yopmail.com,Pass123!,Beloha,"[(""C_03"";2;""noir"")]",dans le panier
+23/05/2026,Rafidimanana,rafidimanana@yopmail.com,Pass123!,Morombe,"[(""M_02"";1;""argent"")]",
+24/05/2026,Randrianjatovo,randrianjatovo@yopmail.com,Pass123!,Ifaty,"[(""S_01"";1;""bleu"")]",paiement accepté
+25/05/2026,Rakotonirainy,rakotonirainy@yopmail.com,Pass123!,Anakao,"[(""CH_01"";1;""40"")]",dans le panier
+26/05/2026,Rasolondraibe,rasolondraibe@yopmail.com,Pass123!,Antsohihy,"[(""P_02"";2;""L"")]",
+27/05/2026,Ramialison,ramialison@yopmail.com,Pass123!,Mampikony,"[(""C_04"";1;""marron"")]",paiement accepté
+28/05/2026,Rafaramalala,rafaramalala@yopmail.com,Pass123!,Port-Bergé,"[(""L_01"";1;""noir"")]",dans le panier
+29/05/2026,Rakotomalaza,rakotomalaza@yopmail.com,Pass123!,Mandritsara,"[(""PO_01"";1;""marron"")]",
+30/05/2026,Razanamparany,razanamparany@yopmail.com,Pass123!,Ambanja,"[(""CH_02"";1;""S"")]",paiement accepté
+31/05/2026,Raharison,raharison@yopmail.com,Pass123!,Ambilobe,"[(""S_02"";2;""L"")]",dans le panier
+01/06/2026,Ramandimbiarison,ramandimbiarison@yopmail.com,Pass123!,Vohemar,"[(""V_01"";1;""M"")]",
+02/06/2026,Rakotoniaina,rakotoniaina@yopmail.com,Pass123!,Maroantsetra,"[(""G_01"";2;""unique"")]",paiement accepté
+03/06/2026,Razanatsoa,razanatsoa@yopmail.com,Pass123!,Fenoarivo,"[(""E_01"";1;""rouge"")]",dans le panier
+04/06/2026,Ramorasata,ramorasata@yopmail.com,Pass123!,Sainte-Marie,"[(""CH_03"";1;""unique"")]",
+05/06/2026,Randrianarivelo,randrianarivelo@yopmail.com,Pass123!,Ambositra,"[(""B_01"";1;""41"")]",paiement accepté
+06/06/2026,Raveloson,raveloson@yopmail.com,Pass123!,Mananjary,"[(""SA_01"";2;""38"")]",dans le panier
+07/06/2026,Rafanomezana,rafanomezana@yopmail.com,Pass123!,Ikongo,"[(""R_01"";1;""M"")]",
+08/06/2026,Rabekoto,rabekoto@yopmail.com,Pass123!,Nosy Varika,"[(""J_01"";1;""40"")]",paiement accepté
+09/06/2026,Ratsiarovana,ratsiarovana@yopmail.com,Pass123!,Vangaindrano,"[(""T_01"";2;""XL"")]",dans le panier
+10/06/2026,Razafintsalama,razafintsalama@yopmail.com,Pass123!,Midongy,"[(""P_01"";1;""44"")]",
+11/06/2026,Rabekanto,rabekanto@yopmail.com,Pass123!,Ankazoabo,"[(""C_03"";1;""noir"")]",paiement accepté
+12/06/2026,Rafanomezantsoa,rafanomezantsoa2@yopmail.com,Pass123!,Betroka,"[(""M_02"";1;""argent"")]",dans le panier
+13/06/2026,Randriamampionona,randriamampionona@yopmail.com,Pass123!,Belo Tsiribihina,"[(""S_01"";1;""bleu"")]",
+14/06/2026,Rakotomanga,rakotomanga@yopmail.com,Pass123!,Miandrivazo,"[(""CH_01"";1;""41"")]",paiement accepté
+15/06/2026,Razanadrasoa,razanadrasoa@yopmail.com,Pass123!,Maintirano,"[(""P_02"";2;""M"")]",dans le panier
+16/06/2026,Rafaralahy,rafaralahy@yopmail.com,Pass123!,Morafenobe,"[(""C_04"";1;""marron"")]",
+17/06/2026,Rakotondrainibe,rakotondrainibe@yopmail.com,Pass123!,Tsihombe,"[(""L_01"";1;""noir"")]",paiement accepté
+18/06/2026,Ramino,ramino@yopmail.com,Pass123!,Ampanihy,"[(""PO_01"";1;""marron"")]",dans le panier
+19/06/2026,Ravelomanitra,ravelomanitra@yopmail.com,Pass123!,Befandriana,"[(""CH_02"";1;""S"")]",
+20/06/2026,Rafidison,rafidison@yopmail.com,Pass123!,Sakaraha,"[(""S_02"";2;""L"")]",paiement accepté
+21/06/2026,Rakotondravao,rakotondravao@yopmail.com,Pass123!,Zafimaniry,"[(""V_01"";1;""M"")]",dans le panier
+22/06/2026,Rafidimanantena,rafidimanantena@yopmail.com,Pass123!,Ikalamavony,"[(""G_01"";2;""unique"")]",
+23/06/2026,Razanamihaja,razanamihaja@yopmail.com,Pass123!,Beroroha,"[(""E_01"";1;""rouge"")]",paiement accepté
+24/06/2026,Rakotondrandria,rakotondrandria@yopmail.com,Pass123!,Benenitra,"[(""CH_03"";1;""unique"")]",dans le panier
+25/06/2026,Ramavo,ramavo@yopmail.com,Pass123!,Ankavandra,"[(""B_01"";1;""41"")]",
+26/06/2026,Rafotaka,rafotaka@yopmail.com,Pass123!,Manja,"[(""SA_01"";2;""38"")]",paiement accepté
+27/06/2026,Rakotoarisoa,rakotoarisoa@yopmail.com,Pass123!,Ambovombe,"[(""R_01"";1;""M"")]",dans le panier
+28/06/2026,Rafaralahimanana,rafaralahimanana@yopmail.com,Pass123!,Amboasary,"[(""J_01"";1;""40"")]",
+29/06/2026,Rakotonirina,rakotonirina@yopmail.com,Pass123!,Fort Dauphin,"[(""T_01"";2;""XL"")]",paiement accepté
+30/06/2026,Rafalimanana,rafalimanana@yopmail.com,Pass123!,Tolagnaro,"[(""P_01"";1;""44"")]",dans le panier
