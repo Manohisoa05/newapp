@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAppSelector } from '../../app/hooks'
 import { wsRequest } from '../../shared/http/prestashopWebserviceClient'
 import { extractItemsFromList, getFirstLanguageText } from '../../shared/http/prestashopResources'
+import { addStockMovement } from '../../shared/stock/stockMovements'
 
 type ProductItem = {
   id: number
@@ -313,6 +314,15 @@ export default function StockPage() {
           return
         }
       }
+
+      addStockMovement({
+        productId: selectedProduct.id,
+        productAttributeId: idProductAttribute,
+        qty: addQty,
+        type: 'entree',
+        date: new Date().toISOString(),
+        source: 'manual',
+      })
 
       setLogs([
         `Produit: ${selectedProduct.reference || selectedProduct.name}`,

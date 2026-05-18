@@ -28,6 +28,7 @@ export default function LoginPage() {
   const backofficeLoggedIn = useAppSelector((s) => s.auth.backofficeLoggedIn)
 
   const [shopUrl, setShopUrl] = useState(current?.shopBaseUrl ?? suggestShopBaseUrl())
+  const [wsKey, setWsKey] = useState(current?.wsKey ?? DEFAULT_WS_KEY)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -35,8 +36,8 @@ export default function LoginPage() {
   const [notice, setNotice] = useState<string | null>(null)
 
   const canSubmit = useMemo(() => {
-    return email.trim().length > 0 && password.trim().length > 0
-  }, [email, password])
+    return email.trim().length > 0 && password.trim().length > 0 && wsKey.trim().length > 0
+  }, [email, password, wsKey])
 
   if (current && backofficeLoggedIn) return <Navigate to="/backoffice" replace />
 
@@ -74,7 +75,7 @@ export default function LoginPage() {
           onSubmit={(e) => {
             e.preventDefault()
             if (!canSubmit || busy) return
-            handleSubmit({ shopBaseUrl: shopUrl.trim(), wsKey: DEFAULT_WS_KEY })
+            handleSubmit({ shopBaseUrl: shopUrl.trim(), wsKey: wsKey.trim() })
           }}
         >
           <label className="grid gap-2">
@@ -91,6 +92,20 @@ export default function LoginPage() {
               disabled={busy}
             />
             <span className="text-xs text-slate-500">Use shop base URL. Leave empty to auto-detect.</span>
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-sm font-semibold text-slate-200">Cle webservice</span>
+            <input
+              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-400"
+              value={wsKey}
+              onChange={(e) => setWsKey(e.target.value)}
+              placeholder="Votre cle webservice PrestaShop"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              disabled={busy}
+            />
           </label>
 
           <label className="grid gap-2">

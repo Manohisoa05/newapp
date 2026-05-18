@@ -39,11 +39,9 @@ function normalizeBaseUrl(url: string) {
   return url.replace(/\/+$/, '')
 }
 
-function buildUrl(config: WsConfig, path: string, query?: WsRequestOptions['query']) {
-  const rawBase = config.shopBaseUrl.trim()
-  const normalizedKey = config.wsKey.trim()
-  const url = rawBase
-    ? new URL(`${normalizeBaseUrl(rawBase)}/api/${path.replace(/^\/+/, '')}`)
+function buildUrlWithBase(base: string, key: string, path: string, query?: WsRequestOptions['query']) {
+  const url = base
+    ? new URL(`${normalizeBaseUrl(base)}/api/${path.replace(/^\/+/, '')}`)
     : new URL(`/api/${path.replace(/^\/+/, '')}`, detectShopBaseUrlFromLocation())
 
   if (query) {
@@ -55,11 +53,17 @@ function buildUrl(config: WsConfig, path: string, query?: WsRequestOptions['quer
 
   // Fallback auth for servers that don't forward Authorization headers reliably.
   // PrestaShop Webservice accepts ws_key as query parameter.
-  if (normalizedKey && !url.searchParams.has('ws_key')) {
-    url.searchParams.set('ws_key', normalizedKey)
+  if (key && !url.searchParams.has('ws_key')) {
+    url.searchParams.set('ws_key', key)
   }
 
   return url
+}
+
+function buildUrl(config: WsConfig, path: string, query?: WsRequestOptions['query']) {
+  const rawBase = config.shopBaseUrl.trim()
+  const normalizedKey = config.wsKey.trim()
+  return buildUrlWithBase(rawBase, normalizedKey, path, query)
 }
 
 export async function wsRequest(config: WsConfig, options: WsRequestOptions): Promise<WsResponse> {
@@ -78,12 +82,40 @@ export async function wsRequest(config: WsConfig, options: WsRequestOptions): Pr
   const basic = btoa(`${normalizedKey}:`)
   headers.set('Authorization', `Basic ${basic}`)
 
-  const res = await fetch(url, {
-    method: options.method,
-    headers,
-    body: options.xmlBody,
-    signal: options.signal,
-  })
+  let res: Response
+  try {
+    res = await fetch(url, {
+      method: options.method,
+      headers,
+      body: options.xmlBody,
+      signal: options.signal,
+    })
+  } catch (err) {
+    const shopBase = config.shopBaseUrl.trim()
+    const appOrigin = window.location.origin
+    const isCrossOrigin = shopBase && !shopBase.startsWith(appOrigin)
+
+    // Retry via Vite dev proxy when cross-origin fails.
+    if (import.meta.env.DEV && isCrossOrigin) {
+      try {
+        const proxyUrl = buildUrlWithBase(appOrigin, normalizedKey, options.path, options.query)
+        res = await fetch(proxyUrl, {
+          method: options.method,
+          headers,
+          body: options.xmlBody,
+          signal: options.signal,
+        })
+      } catch {
+        const hint = ` Conseil: en dev Vite, utilise ${appOrigin} ou configure VITE_PS_SHOP_BASE_URL.`
+        throw new Error(`Echec reseau vers l'API PrestaShop.${hint}`)
+      }
+    } else {
+      const hint = isCrossOrigin
+        ? ` Conseil: en dev Vite, mets l'URL boutique sur ${appOrigin} pour utiliser le proxy /api.`
+        : ''
+      throw new Error(`Echec reseau vers l'API PrestaShop.${hint}`)
+    }
+  }
 
   const xml = await res.text()
 

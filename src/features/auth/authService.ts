@@ -58,7 +58,9 @@ async function fetchEmployeeByEmail(config: WsConfig, email: string): Promise<Em
     },
   })
 
-  if (!res.ok) throw new Error('Erreur lors de la connexion a l API PrestaShop')
+  if (!res.ok) {
+    throw new Error(`Connexion API PrestaShop echouee (HTTP ${res.status}). Verifiez l URL boutique et la cle webservice.`)
+  }
 
   const data = parseXml<any>(res.xml)
   const collection = data?.prestashop?.employees?.employee
@@ -87,7 +89,9 @@ async function fetchCustomerByEmail(config: WsConfig, email: string): Promise<Cu
     },
   })
 
-  if (!res.ok) throw new Error('Erreur lors de la connexion a l API PrestaShop')
+  if (!res.ok) {
+    throw new Error(`Connexion API PrestaShop echouee (HTTP ${res.status}). Verifiez l URL boutique et la cle webservice.`)
+  }
 
   const data = parseXml<any>(res.xml)
   const collection = data?.prestashop?.customers?.customer

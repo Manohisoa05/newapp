@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppSelector } from '../../app/hooks'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { setWsConfig } from '../../features/auth/authSlice'
 import { wsRequest } from '../../shared/http/prestashopWebserviceClient'
 import { parseXml } from '../../shared/xml/xml'
 import { DEFAULT_WS_KEY } from '../../config/webservice'
@@ -24,20 +25,22 @@ function nodeText(value: any): string {
 
 export default function UserSelectorPage() {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const reduxWsConfig = useAppSelector((s) => s.auth.wsConfig)
   const [shopUrl, setShopUrl] = useState(reduxWsConfig?.shopBaseUrl ?? '')
+  const [wsKey, setWsKey] = useState(reduxWsConfig?.wsKey ?? DEFAULT_WS_KEY)
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(!reduxWsConfig)
 
-  async function loadCustomers(url: string) {
+  async function loadCustomers(url: string, key: string) {
     setLoading(true)
     setError(null)
     setCustomers([])
 
     try {
-      const config = { shopBaseUrl: url, wsKey: DEFAULT_WS_KEY }
+      const config = { shopBaseUrl: url, wsKey: key.trim() }
       const response = await wsRequest(config, {
         method: 'GET',
         path: 'customers',
@@ -54,7 +57,7 @@ export default function UserSelectorPage() {
         return
       }
 
-      const parsed = parseXml(response.xml)
+      const parsed = parseXml<any>(response.xml)
 
       const customerList: Customer[] = []
 
@@ -101,6 +104,7 @@ export default function UserSelectorPage() {
       if (customerList.length === 0) {
         setError('Aucun utilisateur trouvé avec ces identifiants. Vérifiez l\'URL et la clé webservice.')
       } else {
+        dispatch(setWsConfig(config))
         setCustomers(customerList.sort((a, b) => a.lastname.localeCompare(b.lastname)))
         setShowForm(false)
       }
@@ -113,7 +117,7 @@ export default function UserSelectorPage() {
 
   useEffect(() => {
     if (reduxWsConfig && !showForm && customers.length === 0) {
-      loadCustomers(reduxWsConfig.shopBaseUrl)
+      loadCustomers(reduxWsConfig.shopBaseUrl, reduxWsConfig.wsKey)
     }
   }, [reduxWsConfig, showForm])
 
@@ -122,15 +126,25 @@ export default function UserSelectorPage() {
   }
 
   function handleAnonymous() {
-    // Utilisateur anonyme : on le redirige directement aux produits
-    // (sans authentification, mais il peut quand même voir et acheter)
+    const config = {
+      shopBaseUrl: shopUrl.trim() || reduxWsConfig?.shopBaseUrl || '',
+      wsKey: wsKey.trim() || reduxWsConfig?.wsKey || DEFAULT_WS_KEY,
+    }
+
+    if (!config.shopBaseUrl || !config.wsKey) {
+      setError('Renseignez l URL boutique et la cle webservice avant de continuer en anonyme.')
+      return
+    }
+
+    dispatch(setWsConfig(config))
+
     navigate('/products')
   }
 
   function handleSubmitConfig(e: React.FormEvent) {
     e.preventDefault()
-    if (!shopUrl.trim()) return
-    loadCustomers(shopUrl.trim())
+    if (!shopUrl.trim() || !wsKey.trim()) return
+    loadCustomers(shopUrl.trim(), wsKey.trim())
   }
 
   return (
@@ -169,6 +183,23 @@ export default function UserSelectorPage() {
                 </label>
               </div>
 
+              <div>
+                <label className="grid gap-2">
+                  <span className="text-sm font-semibold text-slate-700">Cle webservice</span>
+                  <input
+                    type="text"
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                    value={wsKey}
+                    onChange={(e) => setWsKey(e.target.value)}
+                    placeholder="Votre cle webservice PrestaShop"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    disabled={loading}
+                  />
+                </label>
+              </div>
+
               {error ? (
                 <div className="rounded-lg border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                   {error}
@@ -178,7 +209,7 @@ export default function UserSelectorPage() {
               <button
                 type="submit"
                 className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
-                disabled={!shopUrl.trim() || loading}
+                disabled={!shopUrl.trim() || !wsKey.trim() || loading}
               >
                 {loading ? 'Chargement...' : 'Charger la liste des utilisateurs'}
               </button>

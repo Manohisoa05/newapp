@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppSelector } from '../../app/hooks'
 import { wsRequest } from '../../shared/http/prestashopWebserviceClient'
 import { extractItemsFromList, getFirstLanguageText } from '../../shared/http/prestashopResources'
+import { getStockMovementsByProduct } from '../../shared/stock/stockMovements'
 
 type ProductItem = { id: number; name: string; reference: string }
 type StockRow = { id: number }
-type StockMovementRow = { date: string; quantity: number }
+type StockMovementRow = { date: string; quantity: number; kind: 'entree' | 'sortie' | 'neutre' | 'snapshot' }
 type StockAvailableRow = { quantity: number }
 
 function nodeText(value: any): string {
@@ -29,11 +30,17 @@ function parseStocks(xml: string): StockRow[] {
 function parseStockMovements(xml: string): StockMovementRow[] {
   return extractItemsFromList(xml, 'stock_movements', 'stock_movement', (item: any) => {
     const dateRaw = nodeText(item?.date_add)
-    const date = dateRaw.slice(0, 10)
+    const date = dateRaw || ''
     const quantityRaw = nodeText(item?.physical_quantity) || nodeText(item?.quantity)
-    const quantity = Number(quantityRaw)
-    if (!date || !Number.isFinite(quantity)) return null
-    return { date, quantity }
+    const signRaw = nodeText(item?.sign)
+    const sign = Number(signRaw)
+    let quantity = Number(quantityRaw)
+    if (!Number.isFinite(quantity)) return null
+    if (Number.isFinite(sign) && (sign === 1 || sign === -1)) {
+      quantity = Math.abs(quantity) * sign
+    }
+    const kind = quantity > 0 ? 'entree' : quantity < 0 ? 'sortie' : 'neutre'
+    return { date, quantity, kind }
   })
 }
 
@@ -50,7 +57,7 @@ export default function StockHistoryPage() {
   const [products, setProducts] = useState<ProductItem[]>([])
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
   const [movementRows, setMovementRows] = useState<StockMovementRow[]>([])
-  const [movementSource, setMovementSource] = useState<'stock' | 'snapshot' | 'none'>('none')
+  const [movementSource, setMovementSource] = useState<'stock' | 'snapshot' | 'local' | 'none'>('none')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -112,6 +119,20 @@ export default function StockHistoryPage() {
           }
         }
       }
+      // fallback: local app movements
+      const localMovements = getStockMovementsByProduct(productId)
+      if (localMovements.length > 0) {
+        const rows = localMovements.map<StockMovementRow>((row) => ({
+          date: row.date,
+          quantity: row.type === 'sortie' ? -Math.abs(row.qty) : Math.abs(row.qty),
+          kind: row.type === 'sortie' ? 'sortie' : 'entree',
+        }))
+        rows.sort((a, b) => (a.date < b.date ? 1 : -1))
+        setMovementRows(rows)
+        setMovementSource('local')
+        return
+      }
+
       // fallback: snapshot from stock_availables
       const availRes = await wsRequest(wsConfig, {
         method: 'GET',
@@ -126,7 +147,7 @@ export default function StockHistoryPage() {
       if (avail.length > 0) {
         const total = avail.reduce((s, r) => s + r.quantity, 0)
         const today = new Date().toISOString().slice(0, 10)
-        setMovementRows([{ date: today, quantity: total }])
+        setMovementRows([{ date: today, quantity: total, kind: 'snapshot' }])
         setMovementSource('snapshot')
       } else {
         setMovementRows([])
@@ -138,20 +159,6 @@ export default function StockHistoryPage() {
       setLoading(false)
     }
   }
-
-  const aggregated = useMemo(() => {
-    if (movementRows.length === 0) return [] as { date: string; total: number; count: number }[]
-    const map = new Map<string, { total: number; count: number }>()
-    for (const r of movementRows) {
-      const cur = map.get(r.date) ?? { total: 0, count: 0 }
-      cur.total += r.quantity
-      cur.count += 1
-      map.set(r.date, cur)
-    }
-    return Array.from(map.entries()).map(([date, v]) => ({ date, total: v.total, count: v.count })).sort((a, b) => (a.date < b.date ? 1 : -1))
-  }, [movementRows])
-
-
 
   return (
     <div className="space-y-6">
@@ -188,11 +195,11 @@ export default function StockHistoryPage() {
         </div>
 
         <div className="col-span-2 rounded-2xl border p-4">
-          <div className="text-sm font-semibold">Evolution journalière</div>
+          <div className="text-sm font-semibold">Historique detaille</div>
           <div className="mt-3">
             {loading ? (
               <div>Chargement...</div>
-            ) : aggregated.length === 0 ? (
+            ) : movementRows.length === 0 ? (
               <div className="text-sm text-slate-500">Aucun mouvement disponible.</div>
             ) : (
               <div className="overflow-x-auto">
@@ -200,16 +207,20 @@ export default function StockHistoryPage() {
                   <thead className="text-left text-xs text-slate-500">
                     <tr>
                       <th className="px-3 py-2">Date</th>
-                      <th className="px-3 py-2">Mouvements</th>
-                      <th className="px-3 py-2">Variation totale</th>
+                      <th className="px-3 py-2">Type</th>
+                      <th className="px-3 py-2">Quantite</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {aggregated.map((r) => (
-                      <tr key={r.date} className="border-t">
+                    {movementRows.map((r, index) => (
+                      <tr key={`${r.date}-${index}`} className="border-t">
                         <td className="px-3 py-2 font-semibold">{r.date}</td>
-                        <td className="px-3 py-2">{r.count}</td>
-                        <td className="px-3 py-2">{r.total}</td>
+                        <td className="px-3 py-2">
+                          {r.kind === 'entree' ? 'Entree' : r.kind === 'sortie' ? 'Sortie' : r.kind === 'snapshot' ? 'Snapshot' : 'Neutre'}
+                        </td>
+                        <td className={`px-3 py-2 ${r.quantity < 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+                          {r.quantity}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -218,7 +229,13 @@ export default function StockHistoryPage() {
             )}
           </div>
           <div className="mt-3 text-xs text-slate-500">
-            {movementSource === 'stock' ? 'Source: mouvements de stock PrestaShop.' : movementSource === 'snapshot' ? 'Source: snapshot (stock_availables)' : 'Aucune donnée.'}
+            {movementSource === 'stock'
+              ? 'Source: mouvements de stock PrestaShop.'
+              : movementSource === 'local'
+                ? 'Source: mouvements enregistres par l application.'
+                : movementSource === 'snapshot'
+                  ? 'Source: snapshot (stock_availables)'
+                  : 'Aucune donnée.'}
           </div>
         </div>
       </div>

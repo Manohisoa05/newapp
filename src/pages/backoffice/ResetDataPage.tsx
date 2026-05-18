@@ -27,6 +27,8 @@ export default function ResetDataPage() {
   const [logs, setLogs] = useState<string[]>([])
   const [selected, setSelected] = useState<ModuleId[]>(['products'])
   const [force, setForce] = useState(true)
+  const allModules = useMemo(() => MODULE_OPTIONS.map((option) => option.id), [])
+  const resetDashboardKey = 'newapp.dashboard.resetCsv'
 
   const canSubmit = useMemo(() => selected.length > 0 && !busy, [selected, busy])
 
@@ -36,20 +38,25 @@ export default function ResetDataPage() {
     )
   }
 
-  async function handleReset() {
-    if (selected.length === 0) return
+  async function handleReset(forcedSelection?: ModuleId[], resetDashboard = false) {
+    const chosen = forcedSelection ?? selected
+    if (chosen.length === 0) return
     if (!wsConfig) {
       setError('Configuration manquante. Reconnecte-toi au backoffice.')
       return
     }
     const confirmed = window.confirm(
-      `Confirmer la reinitialisation pour: ${selected.join(', ')} ? Cette action est irreversible.${force ? ' (Mode FORCE activé)' : ''}`,
+      `Confirmer la reinitialisation pour: ${chosen.join(', ')} ? Cette action est irreversible.${force ? ' (Mode FORCE activé)' : ''}`,
     )
     if (!confirmed) return
     setBusy(true)
     setDone(false)
     setError(null)
     setLogs([])
+
+    if (resetDashboard) {
+      localStorage.setItem(resetDashboardKey, new Date().toISOString())
+    }
 
     try {
       const targetMap: Record<ModuleId, Parameters<typeof deleteAllForResource>[1] | null> = {
@@ -83,8 +90,8 @@ export default function ResetDataPage() {
       ]
 
       // Ensure dependent resources are also removed when deleting products
-      const expandedSelected = new Set(selected)
-      if (selected.includes('products')) {
+      const expandedSelected = new Set(chosen)
+      if (chosen.includes('products')) {
         expandedSelected.add('combinations')
         expandedSelected.add('stock_availables')
         expandedSelected.add('product_option_values')
@@ -97,8 +104,10 @@ export default function ResetDataPage() {
         .sort((a, b) => priority.indexOf(a) - priority.indexOf(b))
 
       for (const target of targets) {
+        setLogs((prev) => [...prev, `${target}: suppression en cours...`])
         const result = await deleteAllForResource(wsConfig, target, { limit: 5000, force })
-        setLogs((prev) => [...prev, `${target}: ${result.deleted} supprimes`])
+        const failInfo = result.failed ? `, ${result.failed} echecs` : ''
+        setLogs((prev) => [...prev, `${target}: ${result.deleted} supprimes${failInfo}`])
       }
 
       setDone(true)
@@ -159,10 +168,19 @@ export default function ResetDataPage() {
       <button
         type="button"
         className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-500 disabled:opacity-60"
-        onClick={handleReset}
+        onClick={() => handleReset()}
         disabled={!canSubmit}
       >
         {busy ? 'Reinitialisation...' : 'Reinitialiser maintenant'}
+      </button>
+
+      <button
+        type="button"
+        className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-60"
+        onClick={() => handleReset(allModules, true)}
+        disabled={busy}
+      >
+        Tout supprimer
       </button>
 
       {done ? (

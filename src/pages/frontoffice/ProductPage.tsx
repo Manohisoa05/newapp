@@ -227,9 +227,14 @@ export default function ProductPage() {
     })
   }, [baseUrl, product, wsConfig?.wsKey])
 
+  const hasVariants = combinations.length > 0
+
   const totalStock = useMemo(() => {
-    return stock.reduce((sum, item) => sum + item.quantity, 0)
-  }, [stock])
+    return stock.reduce((sum, item) => {
+      if (hasVariants && item.idProductAttribute === 0) return sum
+      return sum + item.quantity
+    }, 0)
+  }, [hasVariants, stock])
 
   useEffect(() => {
     async function loadProduct() {
@@ -237,6 +242,8 @@ export default function ProductPage() {
         setError('Produit introuvable.')
         return
       }
+
+      setSelectedCombinationId(null)
 
       const wsKey = wsConfig?.wsKey?.trim() ?? ''
       if (!wsKey) {
@@ -297,7 +304,11 @@ export default function ProductPage() {
         )
 
         if (comboRes.ok) {
-          setCombinations(parseCombinations(comboRes.xml))
+          const combos = parseCombinations(comboRes.xml)
+          setCombinations(combos)
+          if (combos.length > 0) {
+            setSelectedCombinationId((prev) => prev ?? combos[0].id)
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erreur inconnue')
@@ -518,7 +529,9 @@ export default function ProductPage() {
             <div className="rounded-3xl border border-slate-200/70 bg-white p-6">
               <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Stock detail</div>
               <div className="mt-3 grid gap-2 text-sm text-slate-600">
-                {stock.map((item, index) => {
+                {stock
+                  .filter((item) => !(hasVariants && item.idProductAttribute === 0))
+                  .map((item, index) => {
                   const combo = combinations.find((c) => c.id === item.idProductAttribute)
                   const label = combo?.reference || (item.idProductAttribute ? `Variante ${item.idProductAttribute}` : 'Stock standard')
                   return (

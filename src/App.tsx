@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './features/auth/RequireAuth'
-import { RequireFrontAuth } from './features/auth/RequireFrontAuth'
 import { AppLayout } from './layout/AppLayout'
 import { BackofficePage, ImportDataPage, LoginPage, OrdersPage, ResetDataPage, StockHistoryPage, StockPage } from './pages/backoffice'
 import { CartPage, CheckoutPage, FrontLoginPage, HomePage, MyOrdersPage, ProductPage, UserSelectorPage } from './pages/frontoffice'
@@ -11,43 +10,23 @@ export default function App() {
       <Route path="/" element={<UserSelectorPage />} />
       <Route
         path="/products"
-        element={
-          <RequireFrontAuth>
-            <HomePage />
-          </RequireFrontAuth>
-        }
+        element={<HomePage />}
       />
       <Route
         path="/product/:id"
-        element={
-          <RequireFrontAuth>
-            <ProductPage />
-          </RequireFrontAuth>
-        }
+        element={<ProductPage />}
       />
       <Route
         path="/cart"
-        element={
-          <RequireFrontAuth>
-            <CartPage />
-          </RequireFrontAuth>
-        }
+        element={<CartPage />}
       />
       <Route
         path="/checkout"
-        element={
-          <RequireFrontAuth>
-            <CheckoutPage />
-          </RequireFrontAuth>
-        }
+        element={<CheckoutPage />}
       />
       <Route
         path="/my-orders"
-        element={
-          <RequireFrontAuth>
-            <MyOrdersPage />
-          </RequireFrontAuth>
-        }
+        element={<MyOrdersPage />}
       />
       <Route path="/front-login" element={<FrontLoginPage />} />
       <Route path="/login" element={<LoginPage />} />

@@ -225,6 +225,7 @@ const CART_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 const ORDER_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 <prestashop>
   <order>
+    <date_add>{{date_add}}</date_add>
     <id_address_delivery>{{id_address_delivery}}</id_address_delivery>
     <id_address_invoice>{{id_address_invoice}}</id_address_invoice>
     <id_cart>{{id_cart}}</id_cart>
@@ -259,28 +260,6 @@ const ORDER_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
 </prestashop>
 `
 
-const ORDER_STATE_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
-<prestashop>
-  <order_state>
-    <name>
-      <language id="{{id_lang}}">{{name}}</language>
-    </name>
-    <color>{{color}}</color>
-    <send_email>0</send_email>
-    <module_name></module_name>
-    <invoice>0</invoice>
-    <logable>0</logable>
-    <delivery>0</delivery>
-    <hidden>0</hidden>
-    <shipped>0</shipped>
-    <paid>0</paid>
-    <pdf_invoice>0</pdf_invoice>
-    <pdf_delivery>0</pdf_delivery>
-    <unremovable>0</unremovable>
-  </order_state>
-</prestashop>
-`
-
 function parseNumber(value: string): number {
   const normalized = value.replace('%', '').replace(',', '.').trim()
   const num = Number(normalized)
@@ -290,9 +269,22 @@ function parseNumber(value: string): number {
 function parseOrderDate(value: string): string {
   const raw = value.trim()
   if (!raw) return ''
+  // Accept formats: DD/MM/YYYY[ HH:MM:SS], YYYY-MM-DD[ HH:MM:SS]
+  const frMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}:\d{2}:\d{2}))?$/)
+  if (frMatch) {
+    const day = frMatch[1]
+    const month = frMatch[2]
+    const year = frMatch[3]
+    const time = frMatch[4] ?? '00:00:00'
+    return `${year}-${month}-${day} ${time}`
+  }
 
-  const frMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})/)
-  if (frMatch) return `${frMatch[3]}-${frMatch[2]}-${frMatch[1]}`
+  const isoMatch = raw.match(/^(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}:\d{2}))?$/)
+  if (isoMatch) {
+    const datePart = isoMatch[1]
+    const time = isoMatch[2] ?? '00:00:00'
+    return `${datePart} ${time}`
+  }
 
   return ''
 }
@@ -301,24 +293,45 @@ function normalizeHeader(value: string): string {
   return normalizeLabel(value).replace(/[\s-]+/g, '_')
 }
 
-function isValidDdMmYyyy(value: string): boolean {
+function isValidImportDate(value: string): boolean {
   const raw = value.trim()
-  const match = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
-  if (!match) return false
+  if (!raw) return false
 
-  const day = Number(match[1])
-  const month = Number(match[2])
-  const year = Number(match[3])
-  const date = new Date(year, month - 1, day)
+  // DD/MM/YYYY or DD/MM/YYYY HH:MM:SS
+  const frMatch = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+\d{2}:\d{2}:\d{2})?$/)
+  if (frMatch) {
+    const day = Number(frMatch[1])
+    const month = Number(frMatch[2])
+    const year = Number(frMatch[3])
+    const date = new Date(year, month - 1, day)
+    return (
+      Number.isFinite(day) &&
+      Number.isFinite(month) &&
+      Number.isFinite(year) &&
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    )
+  }
 
-  return (
-    Number.isFinite(day) &&
-    Number.isFinite(month) &&
-    Number.isFinite(year) &&
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-  )
+  // ISO YYYY-MM-DD or YYYY-MM-DD HH:MM:SS
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+\d{2}:\d{2}:\d{2})?$/)
+  if (isoMatch) {
+    const year = Number(isoMatch[1])
+    const month = Number(isoMatch[2])
+    const day = Number(isoMatch[3])
+    const date = new Date(year, month - 1, day)
+    return (
+      Number.isFinite(day) &&
+      Number.isFinite(month) &&
+      Number.isFinite(year) &&
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    )
+  }
+
+  return false
 }
 
 function validateHeaders(
@@ -369,7 +382,7 @@ function validateRows(
     const row = products[i]
     const line = i + 2
 
-    if (row.date_availability_produit?.trim() && !isValidDdMmYyyy(row.date_availability_produit)) {
+    if (row.date_availability_produit?.trim() && !isValidImportDate(row.date_availability_produit)) {
       logs.push({
         step: 'validation',
         message: `Produits ligne ${line}: format date invalide (${row.date_availability_produit}). Attendu DD/MM/YYYY`,
@@ -421,10 +434,10 @@ function validateRows(
   for (let i = 0; i < orders.length; i++) {
     const row = orders[i]
     const line = i + 2
-    if (!isValidDdMmYyyy(row.date)) {
+    if (!isValidImportDate(row.date)) {
       logs.push({
         step: 'validation',
-        message: `Commandes ligne ${line}: format date invalide (${row.date || 'vide'}). Attendu DD/MM/YYYY`,
+        message: `Commandes ligne ${line}: format date invalide (${row.date || 'vide'}). Attendu DD/MM/YYYY ou YYYY-MM-DD`,
       })
       hasErrors = true
     }
@@ -625,7 +638,7 @@ type OrderStateInfo = {
   moduleName: string
 }
 
-async function resolveOrderState(config: WsConfig, label: string, langId: number): Promise<OrderStateInfo> {
+async function resolveOrderState(config: WsConfig, label: string): Promise<OrderStateInfo> {
   const res = await wsRequest(config, {
     method: 'GET',
     path: 'order_states',
@@ -1022,6 +1035,62 @@ function calcTotals(lines: Array<{ priceTtc: number; qty: number; taxRate: numbe
     totalTtc: Number(totalTtc.toFixed(2)),
     totalHt: Number(totalHt.toFixed(2)),
   }
+}
+
+async function decrementStockAvailable(
+  config: WsConfig,
+  idProduct: number,
+  idProductAttribute: number,
+  decreaseBy: number,
+): Promise<boolean> {
+  const getRes = await wsRequest(config, {
+    method: 'GET',
+    path: 'stock_availables',
+    query: {
+      display: '[id,id_product,id_product_attribute,quantity,id_shop,id_shop_group]',
+      'filter[id_product]': `[${idProduct}]`,
+      'filter[id_product_attribute]': `[${idProductAttribute}]`,
+      limit: '0,1',
+    },
+  })
+
+  if (!getRes.ok) return false
+  const parsed = parseXml<any>(getRes.xml)
+  const list = parsed?.prestashop?.stock_availables?.stock_available
+  const arr = Array.isArray(list) ? list : list ? [list] : []
+  if (arr.length === 0) return false
+
+  const stockNode = arr[0]
+  const stockId = Number(stockNode?.id ?? stockNode?.['@_id'] ?? 0)
+  const currentQty = Number(stockNode?.quantity ?? stockNode?.['quantity'] ?? 0)
+  const idShop = Number(stockNode?.id_shop ?? stockNode?.['id_shop'] ?? 1) || 1
+  const idShopGroup = Number(stockNode?.id_shop_group ?? stockNode?.['id_shop_group'] ?? 1) || 1
+  if (!Number.isFinite(stockId)) return false
+
+  const newQty = Math.max(0, (Number.isFinite(currentQty) ? currentQty : 0) - Math.max(0, Math.floor(decreaseBy)))
+
+  const putXml = `<?xml version="1.0" encoding="UTF-8"?>
+<prestashop>
+  <stock_available>
+    <id>${stockId}</id>
+    <id_product>${idProduct}</id_product>
+    <id_product_attribute>${idProductAttribute}</id_product_attribute>
+    <id_shop>${idShop}</id_shop>
+    <id_shop_group>${idShopGroup}</id_shop_group>
+    <quantity>${newQty}</quantity>
+    <depends_on_stock>0</depends_on_stock>
+    <out_of_stock>2</out_of_stock>
+  </stock_available>
+</prestashop>
+`
+
+  const putRes = await wsRequest(config, {
+    method: 'PUT',
+    path: `stock_availables/${stockId}`,
+    xmlBody: putXml,
+  })
+
+  return putRes.ok
 }
 
 export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Promise<ImportResult> {
@@ -1500,10 +1569,32 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
     }
 
     const cartId = extractCreatedId(cartRes.xml, 'cart')
-    const normalizedState = normalizeLabel(row.etat)
+    const rawStateInput = String(row.etat ?? '').trim()
+    const hasState = rawStateInput.length > 0
+    const paidLabels = ['paiement effectue', 'paiement accepte', 'payement effectue']
+    const normalizedInput = normalizeLabel(rawStateInput)
+    const isPaidInput = paidLabels.includes(normalizedInput)
+
+    const rawState = hasState ? rawStateInput : ORDER_STATE_ALIASES.cart
+    const normalizedState = hasState
+      ? isPaidInput
+        ? normalizeLabel(ORDER_STATE_ALIASES.paid)
+        : normalizeLabel(rawState)
+      : normalizeLabel(ORDER_STATE_ALIASES.cart)
+
+    const paymentLabel = hasState
+      ? isPaidInput
+        ? ORDER_STATE_ALIASES.paid
+        : rawState
+      : ORDER_STATE_ALIASES.cart
+
+    if (!hasState) {
+      logs.push({ step: 'cart', message: `${row.email} -> panier ${cartId} (etat vide, commande dans le panier)` })
+    }
+
     let stateInfo = orderStateCache.get(normalizedState)
     if (!stateInfo) {
-      stateInfo = await resolveOrderState(config, row.etat, defaultLangId)
+      stateInfo = await resolveOrderState(config, paymentLabel)
       orderStateCache.set(normalizedState, stateInfo)
     }
 
@@ -1523,8 +1614,9 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
       id_carrier: String(defaultCarrierId),
       current_state: String(stateInfo.id),
       module: moduleName,
-      payment: row.etat,
+      payment: paymentLabel,
       secure_key: secureKey || 'import',
+      date_add: importDate || '',
       total_paid: String(totals.totalTtc),
       total_paid_tax_incl: String(totals.totalTtc),
       total_paid_tax_excl: String(totals.totalHt),
@@ -1550,6 +1642,25 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
     }
 
     const orderId = extractCreatedId(orderRes.xml, 'order')
+    if (orderId && stateInfo?.id) {
+      const historyXml = `<?xml version="1.0" encoding="UTF-8"?>
+<prestashop>
+  <order_history>
+    <id_order>${orderId}</id_order>
+    <id_order_state>${stateInfo.id}</id_order_state>
+  </order_history>
+</prestashop>
+`
+      const historyRes = await wsRequest(config, {
+        method: 'POST',
+        path: 'order_histories',
+        xmlBody: historyXml,
+      })
+      if (!historyRes.ok) {
+        logs.push({ step: 'order', message: `Etat commande non applique ${orderId} (HTTP ${historyRes.status})` })
+        logs.push({ step: 'order', message: historyRes.xml || 'Reponse vide' })
+      }
+    }
     if (orderId && importNote) {
       const orderDetailRes = await wsRequest(config, {
         method: 'GET',
@@ -1574,6 +1685,18 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
         }
       } else {
         logs.push({ step: 'order', message: `Commande ${row.email} creee mais lecture detail impossible (HTTP ${orderDetailRes.status})` })
+      }
+    }
+    const deliveredLabels = ['livree', 'livre', 'livraison effectuee', 'commande livree']
+    const isDelivered = deliveredLabels.includes(normalizedState)
+
+    if (orderId && isDelivered) {
+      for (const row of orderRows) {
+        if (!row.idProduct || row.qty <= 0) continue
+        const ok = await decrementStockAvailable(config, row.idProduct, row.idProductAttribute, row.qty)
+        if (!ok) {
+          logs.push({ step: 'stock', message: `Stock non modifie pour ${row.reference || row.idProduct} (qty ${row.qty})` })
+        }
       }
     }
     logs.push({ step: 'order', message: `${row.email} -> ${orderId}` })
