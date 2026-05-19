@@ -34,6 +34,17 @@ export function AppLayout({ children }: PropsWithChildren) {
               Dashboard
             </NavLink>
             <NavLink
+              to="/backoffice/statistics"
+              className={({ isActive }) =>
+                [
+                  'rounded-lg px-3 py-2 text-sm font-semibold transition-colors',
+                  isActive ? 'bg-indigo-600 text-white' : 'text-slate-700 hover:bg-slate-100',
+                ].join(' ')
+              }
+            >
+              Statistiques
+            </NavLink>
+            <NavLink
               to="/backoffice/reset"
               className={({ isActive }) =>
                 [

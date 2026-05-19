@@ -4,9 +4,9 @@ import { parseCsv } from '../../shared/csv/csv'
 import { wsRequest } from '../../shared/http/prestashopWebserviceClient'
 import { extractItemsFromList } from '../../shared/http/prestashopResources'
 import { parseXml } from '../../shared/xml/xml'
-import productsCsvText from '../../../100-lignes/100 lignes/produits.csv?raw'
-import variantsCsvText from '../../../100-lignes/100 lignes/declinaisons.csv?raw'
-import ordersCsvText from '../../../100-lignes/100 lignes/commandes.csv?raw'
+import productsCsvText from '../../../products.csv?raw'
+import variantsCsvText from '../../../variants.csv?raw'
+import ordersCsvText from '../../../orders.csv?raw'
 
 const PURCHASE_PRICE_BY_REFERENCE: Record<string, number> = {
   T_01: 8.5,
@@ -377,7 +377,15 @@ function buildFallbackStats() {
       totalTtc,
       totalHt,
       purchaseCost,
-      isCart: normalizeLabel(status) !== 'paiement accepte' && normalizeLabel(status) !== 'paiement effectue' && normalizeLabel(status) !== 'payement effectue',
+      isCart: ![
+        'paiement accepte',
+        'paiement effectue',
+        'payement effectue',
+        'livree',
+        'livre',
+        'livraison effectuee',
+        'commande livree',
+      ].includes(normalizeLabel(status)),
     }
   })
 
@@ -471,27 +479,29 @@ export default function BackofficePage() {
       return
     }
 
+    const config = wsConfig
+
     setLoading(true)
     setError(null)
 
     try {
       const [stateRes, productsRes, categoriesRes, stockRes] = await Promise.all([
-        wsRequest(wsConfig, {
+        wsRequest(config, {
           method: 'GET',
           path: 'order_states',
           query: { display: '[id,name]' },
         }),
-        wsRequest(wsConfig, {
+        wsRequest(config, {
           method: 'GET',
           path: 'products',
           query: { display: '[id,reference,id_category_default]', limit: '0,1000' },
         }),
-        wsRequest(wsConfig, {
+        wsRequest(config, {
           method: 'GET',
           path: 'categories',
           query: { display: '[id,name]', limit: '0,1000' },
         }),
-        wsRequest(wsConfig, {
+        wsRequest(config, {
           method: 'GET',
           path: 'stock_availables',
           query: { display: '[id_product,id_product_attribute,quantity]', limit: '0,1000' },
@@ -514,8 +524,10 @@ export default function BackofficePage() {
 
       const canceledLabels = ['annule', 'annulé']
       const cartLabels = ['dans le panier']
+      const paidLabels = ['paiement accepte', 'paiement effectue', 'payement effectue']
+      const deliveredLabels = ['livree', 'livre', 'livraison effectuee', 'commande livree']
 
-      const ordersRes = await wsRequest(wsConfig, {
+      const ordersRes = await wsRequest(config, {
         method: 'GET',
         path: 'orders',
         query: {
@@ -532,7 +544,7 @@ export default function BackofficePage() {
       const orderList = parseOrderList(ordersRes.xml)
       const activeOrders = orderList.filter((order) => {
         const label = stateById.get(order.currentStateId) ?? ''
-        return !canceledLabels.includes(label) && !cartLabels.includes(label)
+        return paidLabels.includes(label) || deliveredLabels.includes(label)
       })
       const cartLikeOrders = orderList.filter((order) => cartLabels.includes(stateById.get(order.currentStateId) ?? ''))
       const canceledOrders = new Set(
@@ -543,7 +555,7 @@ export default function BackofficePage() {
 
       const orderLines: OrderRow[] = []
       for (const order of activeOrders) {
-        const detailRes = await wsRequest(wsConfig, {
+        const detailRes = await wsRequest(config, {
           method: 'GET',
           path: `orders/${order.id}`,
         })
@@ -553,7 +565,7 @@ export default function BackofficePage() {
         if (detail) orderLines.push(detail)
       }
 
-      const cartsRes = await wsRequest(wsConfig, {
+      const cartsRes = await wsRequest(config, {
         method: 'GET',
         path: 'carts',
         query: {
@@ -596,7 +608,7 @@ export default function BackofficePage() {
       for (const cart of filteredCarts) {
         // best-effort fetch of cart contents so reserved stock is based on the actual open carts.
         // eslint-disable-next-line no-await-in-loop
-        const cartRes = await wsRequest(wsConfig, {
+        const cartRes = await wsRequest(config, {
           method: 'GET',
           path: `carts/${cart.id}`,
         })

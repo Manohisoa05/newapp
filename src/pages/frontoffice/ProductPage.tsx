@@ -127,6 +127,27 @@ function parseProduct(xml: string, taxRates: Map<number, number>): ProductDetail
   }
 }
 
+async function fetchProductXml(config: { shopBaseUrl: string; wsKey: string }, productId: number) {
+  const directRes = await wsRequest(config, {
+    method: 'GET',
+    path: `products/${productId}`,
+  })
+
+  if (directRes.ok) return directRes
+
+  const fallbackRes = await wsRequest(config, {
+    method: 'GET',
+    path: 'products',
+    query: {
+      display: 'full',
+      'filter[id]': `[${productId}]`,
+      limit: '0,1',
+    },
+  })
+
+  return fallbackRes.ok ? fallbackRes : directRes
+}
+
 function parseStock(xml: string): StockItem[] {
   return extractItemsFromList(xml, 'stock_availables', 'stock_available', (item) => {
     const quantity = Number(nodeText(item?.quantity) || 0)
@@ -257,13 +278,7 @@ export default function ProductPage() {
       try {
         const taxRates = await fetchTaxRates({ shopBaseUrl: baseUrl, wsKey })
 
-        const productRes = await wsRequest(
-          { shopBaseUrl: baseUrl, wsKey },
-          {
-            method: 'GET',
-            path: `products/${productId}`,
-          },
-        )
+        const productRes = await fetchProductXml({ shopBaseUrl: baseUrl, wsKey }, productId)
 
         if (!productRes.ok) {
           setError(`Impossible de charger le produit (HTTP ${productRes.status}).`)

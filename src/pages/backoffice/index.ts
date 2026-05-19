@@ -1,4 +1,5 @@
 export { default as BackofficePage } from './BackofficePage'
+export { default as StatisticsPage } from './StatisticsPage'
 export { default as ImportDataPage } from './ImportDataPage'
 export { default as LoginPage } from './LoginPage'
 export { default as OrdersPage } from './OrdersPage'

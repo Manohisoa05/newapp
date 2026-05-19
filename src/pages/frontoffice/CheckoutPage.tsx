@@ -4,29 +4,10 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { authService } from '../../features/auth/authService'
 import { clearCart } from '../../features/shop/cartSlice'
 import { createCodOrder, type CheckoutCustomer } from '../../features/shop/checkoutWebservice'
-import { wsRequest } from '../../shared/http/prestashopWebserviceClient'
-import { parseXml } from '../../shared/xml/xml'
 
 function formatPrice(value: number): string {
   if (!Number.isFinite(value)) return '0'
   return value.toFixed(2)
-}
-
-type Customer = {
-  id: number
-  firstname: string
-  lastname: string
-  email: string
-}
-
-function nodeText(value: any): string {
-  if (value === undefined || value === null) return ''
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value)
-  if (typeof value === 'object') {
-    if (typeof value['#text'] === 'string' || typeof value['#text'] === 'number') return String(value['#text'])
-    if (typeof value[''] === 'string' || typeof value[''] === 'number') return String(value[''])
-  }
-  return ''
 }
 
 export default function CheckoutPage() {
@@ -46,9 +27,7 @@ export default function CheckoutPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [orderId, setOrderId] = useState<number | null>(null)
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [customersLoading, setCustomersLoading] = useState(false)
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null)
+  const [redirectedToSelector, setRedirectedToSelector] = useState(false)
 
   const total = useMemo(() => items.reduce((sum, item) => sum + item.price * item.qty, 0), [items])
 
@@ -68,62 +47,12 @@ export default function CheckoutPage() {
   }, [])
 
   useEffect(() => {
-    async function loadCustomers() {
-      if (!wsConfig || connectedCustomerId !== null) return
-      setCustomersLoading(true)
-      try {
-        const response = await wsRequest(wsConfig, {
-          method: 'GET',
-          path: 'customers',
-          query: {
-            display: '[id,firstname,lastname,email]',
-            limit: '0,500',
-          },
-        })
-
-        if (!response.ok) {
-          setError(`Impossible de charger les clients (HTTP ${response.status}).`)
-          setCustomers([])
-          return
-        }
-
-        const parsed = parseXml<any>(response.xml)
-        const list = parsed?.prestashop?.customers?.customer
-        const arr = Array.isArray(list) ? list : list ? [list] : []
-        const rows: Customer[] = []
-
-        for (const customer of arr) {
-          const id = Number(customer?.id ?? customer?.['@_id'])
-          const firstname = nodeText(customer?.firstname)
-          const lastname = nodeText(customer?.lastname)
-          const email = nodeText(customer?.email)
-          if (Number.isFinite(id) && id > 0 && email) {
-            rows.push({ id, firstname, lastname, email })
-          }
-        }
-
-        setCustomers(rows.sort((a, b) => a.lastname.localeCompare(b.lastname)))
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erreur lors du chargement des clients')
-      } finally {
-        setCustomersLoading(false)
-      }
-    }
-
-    void loadCustomers()
-  }, [connectedCustomerId, wsConfig])
-
-  function handleSelectCustomer(customer: Customer) {
-    setSelectedCustomerId(customer.id)
-    setConnectedCustomerId(customer.id)
-    setForm({
-      firstname: customer.firstname,
-      lastname: customer.lastname,
-      email: customer.email,
-      address1: '',
-      city: '',
-    })
-  }
+    if (orderId) return
+    if (connectedCustomerId !== null) return
+    if (redirectedToSelector) return
+    setRedirectedToSelector(true)
+    navigate('/', { replace: true, state: { returnTo: '/checkout' } })
+  }, [connectedCustomerId, navigate, orderId, redirectedToSelector])
 
   async function handleSubmit() {
     if (!wsConfig) {
@@ -132,7 +61,7 @@ export default function CheckoutPage() {
     }
 
     if (connectedCustomerId === null) {
-      setError('Choisissez un utilisateur avant de valider la commande.')
+      navigate('/', { replace: true, state: { returnTo: '/checkout' } })
       return
     }
 
@@ -299,37 +228,13 @@ export default function CheckoutPage() {
               <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
                 Paiement a la livraison uniquement. Livraison gratuite.
               </div>
-              {connectedCustomerId === null ? (
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Choisir un utilisateur</div>
-                  <div className="mt-3 max-h-56 overflow-auto space-y-2">
-                    {customersLoading ? (
-                      <div className="text-sm text-slate-500">Chargement des clients...</div>
-                    ) : customers.length === 0 ? (
-                      <div className="text-sm text-slate-500">Aucun client disponible.</div>
-                    ) : (
-                      customers.map((customer) => (
-                        <button
-                          key={customer.id}
-                          type="button"
-                          onClick={() => handleSelectCustomer(customer)}
-                          className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition-colors ${selectedCustomerId === customer.id ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
-                        >
-                          <div className="font-semibold">{customer.firstname} {customer.lastname}</div>
-                          <div className={selectedCustomerId === customer.id ? 'text-white/80' : 'text-slate-500'}>{customer.email}</div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              ) : null}
               <button
                 type="button"
-                disabled={busy || items.length === 0 || connectedCustomerId === null}
+                disabled={busy || items.length === 0}
                 onClick={handleSubmit}
                 className="mt-5 w-full rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 disabled:opacity-50"
               >
-                {busy ? 'Validation...' : connectedCustomerId === null ? 'Choisissez un utilisateur' : 'Valider la commande'}
+                {busy ? 'Validation...' : connectedCustomerId === null ? 'Choisir un utilisateur pour valider' : 'Valider la commande'}
               </button>
             </div>
           </div>

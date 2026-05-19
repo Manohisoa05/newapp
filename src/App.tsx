@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './features/auth/RequireAuth'
 import { AppLayout } from './layout/AppLayout'
-import { BackofficePage, ImportDataPage, LoginPage, OrdersPage, ResetDataPage, StockHistoryPage, StockPage } from './pages/backoffice'
+import { BackofficePage, ImportDataPage, LoginPage, OrdersPage, ResetDataPage, StatisticsPage, StockHistoryPage, StockPage } from './pages/backoffice'
 import { CartPage, CheckoutPage, FrontLoginPage, HomePage, MyOrdersPage, ProductPage, UserSelectorPage } from './pages/frontoffice'
 
 export default function App() {
@@ -36,6 +36,16 @@ export default function App() {
           <RequireAuth>
             <AppLayout>
               <BackofficePage />
+            </AppLayout>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/backoffice/statistics"
+        element={
+          <RequireAuth>
+            <AppLayout>
+              <StatisticsPage />
             </AppLayout>
           </RequireAuth>
         }

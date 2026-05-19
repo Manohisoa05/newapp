@@ -6,6 +6,21 @@ import { wsRequest } from '../../shared/http/prestashopWebserviceClient'
 import { parseXml } from '../../shared/xml/xml'
 import { DEFAULT_WS_KEY } from '../../config/webservice'
 
+function suggestShopBaseUrl(): string {
+  const fromEnv = String(import.meta.env.VITE_PS_SHOP_BASE_URL ?? '').trim()
+  if (fromEnv) return fromEnv
+
+  const origin = window.location.origin
+  const path = window.location.pathname
+  const adminMatch = path.match(/\/admin[^/]*\//)
+  if (adminMatch?.index !== undefined) {
+    const basePath = path.slice(0, adminMatch.index)
+    return `${origin}${basePath}`
+  }
+
+  return origin
+}
+
 type Customer = {
   id: number
   firstname: string
@@ -127,17 +142,11 @@ export default function UserSelectorPage() {
 
   function handleAnonymous() {
     const config = {
-      shopBaseUrl: shopUrl.trim() || reduxWsConfig?.shopBaseUrl || '',
+      shopBaseUrl: shopUrl.trim() || reduxWsConfig?.shopBaseUrl || suggestShopBaseUrl(),
       wsKey: wsKey.trim() || reduxWsConfig?.wsKey || DEFAULT_WS_KEY,
     }
 
-    if (!config.shopBaseUrl || !config.wsKey) {
-      setError('Renseignez l URL boutique et la cle webservice avant de continuer en anonyme.')
-      return
-    }
-
     dispatch(setWsConfig(config))
-
     navigate('/products')
   }
 

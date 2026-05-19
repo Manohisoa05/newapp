@@ -102,6 +102,7 @@ const PRODUCT_TEMPLATE = `<?xml version="1.0" encoding="UTF-8"?>
     </link_rewrite>
     <reference>{{reference}}</reference>
     <price>{{price}}</price>
+    <wholesale_price>{{wholesale_price}}</wholesale_price>
     <id_category_default>{{id_category_default}}</id_category_default>
     <id_tax_rules_group>{{id_tax_rules_group}}</id_tax_rules_group>
     <available_for_order>1</available_for_order>
@@ -574,8 +575,6 @@ function slugify(value: string): string {
 }
 
 function mapCategoryName(value: string): string {
-  const normalized = normalizeLabel(value)
-  if (normalized === 'akanjo') return 'Vetements'
   return value
 }
 
@@ -1093,6 +1092,71 @@ async function decrementStockAvailable(
   return putRes.ok
 }
 
+async function consolidateStockForProduct(config: WsConfig, idProduct: number) {
+  if (!config || !Number.isFinite(idProduct) || idProduct <= 0) return
+
+  const getRes = await wsRequest(config, {
+    method: 'GET',
+    path: 'stock_availables',
+    query: {
+      display: '[id,id_product_attribute,quantity,id_shop,id_shop_group]',
+      'filter[id_product]': `[${idProduct}]`,
+      limit: '0,200',
+    },
+  })
+
+  if (!getRes.ok) return
+  const parsed = parseXml<any>(getRes.xml)
+  const list = parsed?.prestashop?.stock_availables?.stock_available
+  const arr = Array.isArray(list) ? list : list ? [list] : []
+  if (arr.length <= 1) return
+
+  const groups = new Map<number, any[]>()
+  for (const node of arr) {
+    const idAttr = Number(node?.id_product_attribute ?? node?.['id_product_attribute'] ?? 0) || 0
+    const bucket = groups.get(idAttr) ?? []
+    bucket.push(node)
+    groups.set(idAttr, bucket)
+  }
+
+  for (const [idAttr, nodes] of groups.entries()) {
+    if (nodes.length <= 1) continue
+
+    let sum = 0
+    for (const n of nodes) {
+      const q = Number(n?.quantity ?? n?.['quantity'] ?? 0) || 0
+      sum += q
+    }
+
+    const first = nodes[0]
+    const firstId = Number(first?.id ?? first?.['@_id'] ?? 0)
+    const firstShop = Number(first?.id_shop ?? first?.['id_shop'] ?? 1) || 1
+    const firstShopGroup = Number(first?.id_shop_group ?? first?.['id_shop_group'] ?? 1) || 1
+    if (Number.isFinite(firstId) && firstId > 0) {
+      const putXml = `<?xml version="1.0" encoding="UTF-8"?>\n<prestashop>\n  <stock_available>\n    <id>${firstId}</id>\n    <id_product>${idProduct}</id_product>\n    <id_product_attribute>${idAttr}</id_product_attribute>\n    <id_shop>${firstShop}</id_shop>\n    <id_shop_group>${firstShopGroup}</id_shop_group>\n    <quantity>${sum}</quantity>\n    <depends_on_stock>0</depends_on_stock>\n    <out_of_stock>2</out_of_stock>\n  </stock_available>\n</prestashop>\n`
+      try {
+        await wsRequest(config, { method: 'PUT', path: `stock_availables/${firstId}`, xmlBody: putXml })
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    for (let i = 1; i < nodes.length; i++) {
+      try {
+        const node = nodes[i]
+        const sid = Number(node?.id ?? node?.['@_id'] ?? 0)
+        const shopId = Number(node?.id_shop ?? node?.['id_shop'] ?? 1) || 1
+        const shopGroupId = Number(node?.id_shop_group ?? node?.['id_shop_group'] ?? 1) || 1
+        if (!Number.isFinite(sid)) continue
+        const zeroXml = `<?xml version="1.0" encoding="UTF-8"?>\n<prestashop>\n  <stock_available>\n    <id>${sid}</id>\n    <id_product>${idProduct}</id_product>\n    <id_product_attribute>${idAttr}</id_product_attribute>\n    <id_shop>${shopId}</id_shop>\n    <id_shop_group>${shopGroupId}</id_shop_group>\n    <quantity>0</quantity>\n    <depends_on_stock>0</depends_on_stock>\n    <out_of_stock>2</out_of_stock>\n  </stock_available>\n</prestashop>\n`
+        await wsRequest(config, { method: 'PUT', path: `stock_availables/${sid}`, xmlBody: zeroXml })
+      } catch (e) {
+        // ignore
+      }
+    }
+  }
+}
+
 export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Promise<ImportResult> {
   const logs: ImportLog[] = []
 
@@ -1261,6 +1325,7 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
     }
 
     const rowPriceTtc = parseNumber(row.prix_ttc)
+    const purchasePrice = parseNumber(row.prix_achat)
     const minVariantTtc = minVariantPriceByRef.get(row.reference)
     const priceTtc = minVariantTtc && minVariantTtc > 0 ? Math.min(rowPriceTtc, minVariantTtc) : rowPriceTtc
     const priceHt = taxRate > 0 ? priceTtc / (1 + taxRate / 100) : priceTtc
@@ -1269,6 +1334,7 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
       link_rewrite: slugify(row.nom),
       reference: row.reference,
       price: priceHt.toFixed(6),
+      wholesale_price: purchasePrice.toFixed(6),
       id_category_default: String(categoryId),
       id_tax_rules_group: String(taxGroupId),
     })
@@ -1709,6 +1775,11 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
     if (orderId && isDelivered) {
       for (const row of orderRows) {
         if (!row.idProduct || row.qty <= 0) continue
+        try {
+          await consolidateStockForProduct(config, row.idProduct)
+        } catch (e) {
+          // ignore consolidation errors
+        }
         const ok = await decrementStockAvailable(config, row.idProduct, row.idProductAttribute, row.qty)
         if (!ok) {
           logs.push({ step: 'stock', message: `Stock non modifie pour ${row.reference || row.idProduct} (qty ${row.qty})` })
