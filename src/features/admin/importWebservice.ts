@@ -1668,20 +1668,36 @@ export async function importAllFromCsv(config: WsConfig, files: ImportFiles): Pr
       })
 
       if (orderDetailRes.ok) {
-        const noteXml = orderDetailRes.xml.replace(/<note>[\s\S]*?<\/note>/, `<note>${escapeXml(importNote)}</note>`)
-        const finalXml = noteXml.includes('<note>')
-          ? noteXml
-          : noteXml.replace(/<\/order>/, `  <note>${escapeXml(importNote)}</note>\n  </order>`)
+        // Ensure order note and CSV import date are persisted: update order via PUT
+        let detailXml = orderDetailRes.xml || ''
 
-        const noteRes = await wsRequest(config, {
+        // Replace or insert <note>
+        if (detailXml.match(/<note>[\s\S]*?<\/note>/)) {
+          detailXml = detailXml.replace(/<note>[\s\S]*?<\/note>/, `<note>${escapeXml(importNote)}</note>`)
+        } else if (importNote) {
+          detailXml = detailXml.replace(/<\/order>/, `  <note>${escapeXml(importNote)}</note>\n  </order>`)
+        }
+
+        // Replace or insert <date_add> with CSV date (if provided)
+        if (importDate) {
+          if (detailXml.match(/<date_add>[\s\S]*?<\/date_add>/)) {
+            detailXml = detailXml.replace(/<date_add>[\s\S]*?<\/date_add>/, `<date_add>${escapeXml(importDate)}</date_add>`)
+          } else {
+            detailXml = detailXml.replace(/<\/order>/, `  <date_add>${escapeXml(importDate)}</date_add>\n  </order>`)
+          }
+        }
+
+        const putRes = await wsRequest(config, {
           method: 'PUT',
           path: `orders/${orderId}`,
-          xmlBody: finalXml,
+          xmlBody: detailXml,
         })
 
-        if (!noteRes.ok) {
-          logs.push({ step: 'order', message: `Commande ${row.email} creee mais note datee impossible (HTTP ${noteRes.status})` })
-          logs.push({ step: 'order', message: noteRes.xml || 'Reponse vide' })
+        if (!putRes.ok) {
+          logs.push({ step: 'order', message: `Commande ${row.email} creee mais maj date/note impossible (HTTP ${putRes.status})` })
+          logs.push({ step: 'order', message: putRes.xml || 'Reponse vide' })
+        } else {
+          if (importDate) logs.push({ step: 'order', message: `Commande ${row.email} -> ${orderId} date importee: ${importDate}` })
         }
       } else {
         logs.push({ step: 'order', message: `Commande ${row.email} creee mais lecture detail impossible (HTTP ${orderDetailRes.status})` })
